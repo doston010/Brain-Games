@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BrainApp Premium 5 in 1</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700;800&family=Outfit:wght@300;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #09090b;
+            --surface: #18181b;
+            --surface-hover: #27272a;
+            --primary: #8b5cf6;
+            --secondary: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #a1a1aa;
+            --red: #ef4444;
+            --green: #22c55e;
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08), transparent 25%);
+        }
+
+        .container {
+            width: 100%; max-width: 600px; margin: 0 auto; padding: 20px 20px 40px;
+            display: flex; flex-direction: column; flex-grow: 1;
+        }
+
+        /* Nav */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0 25px; border-bottom: 1px solid var(--border); margin-bottom: 25px;
+        }
+        nav h1 { 
+            font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 26px; 
+            background: linear-gradient(135deg, #60A5FA, #A78BFA, #F472B6); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+        }
+        .user-badge {
+            display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 99px;
+            background: var(--border); font-size: 14px; font-weight: 500;
+        }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-up { animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* Dashboard Cards */
+        .cards-grid { display: flex; flex-direction: column; gap: 14px; }
+        .game-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+            padding: 18px; display: flex; align-items: center; gap: 20px;
+            cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden;
+        }
+        .game-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .card-icon {
+            font-size: 32px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05); border-radius: 16px; flex-shrink: 0;
+        }
+        .card-content h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .card-content p { font-size: 13px; color: var(--text-muted); line-height: 1.4;}
+
+        /* Generics */
+        .btn-back {
+            background: transparent; border: 1px solid var(--border); color: #fff; padding: 8px 16px; border-radius: 8px; 
+            cursor: pointer; font-size: 14px; margin-bottom: 20px; transition: background 0.2s; align-self: flex-start;
+        }
+        .btn-back:hover { background: rgba(255,255,255,0.1); }
+        .game-wrapper { flex-grow: 1; display: flex; flex-direction: column; }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; border: none; 
+            padding: 14px 28px; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+        .btn-primary:active { transform: scale(0.96); }
+
+        .game-area {
+            flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border-radius: 24px; padding: 40px 20px; text-align: center; cursor: default;
+            background: var(--surface); border: 1px solid var(--border); min-height: 350px; user-select: none; position: relative;
+        }
+
+        /* Number Memory */
+        .number-display { font-size: 50px; font-weight: 800; font-family: 'Space Grotesk', sans-serif; letter-spacing: 4px; word-break: break-all;}
+        .num-input {
+            background: rgba(0,0,0,0.3); border: 2px solid var(--border); color: #fff; font-size: 24px; font-weight: 700; 
+            text-align: center; padding: 15px; border-radius: 12px; width: 100%; max-width: 300px; outline: none; margin-top: 20px;
+        }
+
+        /* Sequence Memory */
+        .seq-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 300px; margin: 20px auto;
+        }
+        .seq-box {
+            background: rgba(255,255,255,0.05); border-radius: 16px; aspect-ratio: 1; border: 2px solid transparent; 
+            transition: background 0.2s, transform 0.1s; cursor: pointer;
+        }
+        .seq-box.active { background: #fff; transform: scale(0.95); box-shadow: 0 0 20px rgba(255,255,255,0.8); }
+        .seq-box:active { transform: scale(0.90); }
+
+        /* Aim Trainer */
+        .aim-target {
+            position: absolute; width: 50px; height: 50px; background: radial-gradient(circle, #fff 20%, var(--primary) 20%, var(--primary) 40%, transparent 40%);
+            border: 4px solid var(--primary); border-radius: 50%; cursor: crosshair; box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+        }
+
+        /* Leaderboard */
+        .leaderboard-box { background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-top: 25px; width: 100%;}
+        .rank-item { display: flex; justify-content: space-between; padding: 10px 15px; border-radius: 10px; background: rgba(255,255,255,0.02); margin-bottom: 6px; }
+        .rank-item.highlight { background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.3); }
+        .rank-item .score { font-family: 'Space Grotesk', sans-serif; color: #FCD34D; font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const API_BASE = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') ? 'http://127.0.0.1:8000' : window.location.origin;
+
+        // --- Utils ---
+        async function saveResult(user, gameType, score) {
+            await fetch(`${API_BASE}/api/score`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tg_id: user.id, name: user.first_name, game_type: gameType, score })
+            });
+        }
+
+        function Leaderboard({ gameType, user }) {
+            const [data, setData] = useState({leaders:[], stat:{}});
+            useEffect(() => {
+                fetch(`${API_BASE}/api/leaderboard?tg_id=${user.id}`).then(r => r.json()).then(d => {
+                    setData({leaders: d.leaderboards[gameType] || [], stat: d.user_stats[gameType] || {}});
+                });
+            }, [gameType, user.id]);
+
+            const unit = (gameType === 'reaction' || gameType === 'aim') ? 'ms' : (gameType === 'word' ? 'ball' : 'lvl');
+            return (
+                <div className="leaderboard-box">
+                    <h3 style={{marginBottom:'15px', color:'var(--text-muted)'}}>🏆 Reyting The Best</h3>
+                    {data.stat.rank && <div style={{color:'#A78BFA', marginBottom:'15px', fontWeight:'bold'}}>O'rningiz: #{data.stat.rank} (Eng yaxshi: {data.stat.best_score} {unit})</div>}
+                    {data.leaders.length === 0 ? <p style={{color:'#666'}}>Hech kim o'ynamadi.</p> :
+                        data.leaders.map((l, i) => (
+                            <div key={i} className={`rank-item ${l.name === user.first_name ? 'highlight' : ''}`}>
+                                <div><span style={{opacity:0.5, marginRight:'10px'}}>#{i+1}</span>{l.name}</div>
+                                <div className="score">{l.score} {unit}</div>
+                            </div>
+                        ))}
+                </div>
+            );
+        }
+
+        // --- Main App ---
+        function App() {
+            const [user, setUser] = useState({ id: 999, first_name: "Mehmon" });
+            const [view, setView] = useState('dashboard');
+            
+            useEffect(() => {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    const tg = window.Telegram.WebApp;
+                    tg.ready(); tg.expand();
+                    if (tg.initDataUnsafe && tg.initDataUnsafe.user) setUser(tg.initDataUnsafe.user);
+                }
+            }, []);
+
+            return (
+                <div className="container">
+                    <nav>
+                        <h1>BrainApp Mega</h1>
+                        <div className="user-badge">🚀 {user.first_name}</div>
+                    </nav>
+                    {view === 'dashboard' && <Dashboard setView={setView} />}
+                    {view === 'reaction' && <ReactionGame user={user} goBack={() => setView('dashboard')} />}
+                    {view === 'number' && <NumberMemoryGame user={user} goBack={() => setView('dashboard')} />}
+                    {view === 'aim' && <AimTrainerGame user={user} goBack={() => setView('dashboard')} />}
+                    {view === 'sequence' && <SequenceGame user={user} goBack={() => setView('dashboard')} />}
+                    {view === 'word' && <WordColorGame user={user} goBack={() => setView('dashboard')} />}
+                </div>
+            );
+        }
+
+        // --- Dashboard ---
+        function Dashboard({ setView }) {
+            const games = [
+                {id: 'reaction', icon: '⚡', color: '#ef4444', title: 'Reaction Time', desc: "Qizarishini kutib tezroq bosing."},
+                {id: 'number', icon: '🔢', color: '#3b82f6', title: 'Number Memory', desc: "Ekranda ko'rsatilgan sonlarni eslab qoling."},
+                {id: 'aim', icon: '🎯', color: '#8b5cf6', title: 'Aim Trainer', desc: "Nishonni maksimal tezlikda yo'q qiling."},
+                {id: 'sequence', icon: '🧩', color: '#10b981', title: 'Sequence Memory', desc: "Kombinatsiya xotirasi. Kvadratlarni takrorlang."},
+                {id: 'word', icon: '🎨', color: '#f59e0b', title: 'Word Color Test', desc: "Miyani chalg'itish. Matn xavotir olib kelmasin."}
+            ];
+            return (
+                <div className="animate-up cards-grid">
+                    <h2 style={{fontSize:'20px', marginBottom:'10px'}}>O'yinni tanlang (5ta)</h2>
+                    {games.map(g => (
+                        <div key={g.id} className="game-card" onClick={() => setView(g.id)}>
+                            <div className="card-icon" style={{color: g.color}}>{g.icon}</div>
+                            <div className="card-content">
+                                <h3>{g.title}</h3>
+                                <p>{g.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        // --- GAME 1: REACTION ---
+        function ReactionGame({ user, goBack }) {
+            const [state, setState] = useState('waiting');
+            const [score, setScore] = useState(null);
+            const refT = useRef(), refS = useRef();
+            const [lbKey, setLbKey] = useState(0);
+
+            const click = () => {
+                if(state === 'waiting' || state === 'result') {
+                    setState('ready'); setScore(null);
+                    refT.current = setTimeout(() => { setState('click'); refS.current = performance.now(); }, Math.random()*3000 + 2000);
+                } else if(state === 'ready') {
+                    clearTimeout(refT.current); setState('result'); setScore('Juda erta!');
+                } else if(state === 'click') {
+                    const diff = Math.round(performance.now() - refS.current);
+                    setScore(diff); setState('result');
+                    saveResult(user, 'reaction', diff).then(() => setLbKey(x => x + 1));
+                }
+            };
+            return (
+                <div className="animate-up game-wrapper">
+                    <button className="btn-back" onClick={goBack}>← Orqaga</button>
+                    <div className="game-area" style={{background: state==='ready'?'var(--red)':state==='click'?'var(--green)':'var(--surface)', cursor:'pointer'}} onMouseDown={click} onTouchStart={click}>
+                        <div style={{fontSize:'50px', marginBottom:'15px'}}>{state==='ready'?'🔴':state==='click'?'🟢':'⚡'}</div>
+                        <h2 style={{color: state!=='waiting' && state!=='result'?'#fff':''}}>{state==='ready'?'Kuting...':state==='click'?'BOSING!':(score?(typeof score==='number'?score+' ms':score):'Reaction Time')}</h2>
+                    </div>
+                    {state === 'result' && <Leaderboard key={lbKey} gameType="reaction" user={user} />}
+                </div>
+            );
+        }
+
+        // --- GAME 2: NUMBER MEMORY ---
+        function NumberMemoryGame({ user, goBack }) {
+            const [phase, setPhase] = useState('intro');
+            const [level, setLevel] = useState(1);
+            const [number, setNumber] = useState('');
+            const [inputValue, setInputValue] = useState('');
+            const [lbKey, setLbKey] = useState(0);
+
+            const start = (lvl) => {
+                let str = ''; for(let i=0; i<lvl+1; i++) str += Math.floor(Math.random() * 10);
+                setNumber(str); setLevel(lvl); setPhase('show');
+                setTimeout(() => { setPhase('input'); setInputValue(''); }, lvl*500 + 1000);
+            };
+
+            const check = () => {
+                if(inputValue === number) start(level + 1);
+                else { setPhase('result'); saveResult(user, 'number', level).then(() => setLbKey(x => x + 1)); }
+            };
+
+            return (
+                <div className="animate-up game-wrapper">
+                    <button className="btn-back" onClick={goBack}>← Orqaga</button>
+                    <div className="game-area">
+                        {phase === 'intro' && (<> <div style={{fontSize:'50px'}}>🔢</div><h2>Number Memory</h2><button className="btn-primary" onClick={()=>start(1)}>Boshlash</button> <Leaderboard gameType="number" user={user} /> </>)}
+                        {phase === 'show' && (<> <h2 style={{color:'var(--text-muted)'}}>Level {level}</h2> <div className="number-display" style={{letterSpacing:'10px'}}>{number}</div> </>)}
+                        {phase === 'input' && (<> <h2>Raqamni yozing</h2> <input type="number" className="num-input" autoFocus value={inputValue} onChange={e=>setInputValue(e.target.value)} onKeyDown={e=>e.key==='Enter'&&check()} /> <button className="btn-primary" onClick={check} style={{marginTop:'20px'}}>Tekshirish</button> </>)}
+                        {phase === 'result' && (<> <h2>Xato!</h2> <p>Raqam: {number}</p><p>Sizniki: <strike>{inputValue}</strike></p> <h3 style={{margin:'15px 0', color:'var(--primary)'}}>Natija: Level {level}</h3> <button className="btn-primary" onClick={()=>start(1)}>Qayta</button> <Leaderboard key={lbKey} gameType="number" user={user} /> </>)}
+                    </div>
+                </div>
+            );
+        }
+
+        // --- GAME 3: AIM TRAINER ---
+        function AimTrainerGame({ user, goBack }) {
+            const [phase, setPhase] = useState('intro');
+            const [pos, setPos] = useState({top:50, left:50});
+            const [clicks, setClicks] = useState(0);
+            const [times, setTimes] = useState([]);
+            const [last, setLast] = useState(0);
+            const boxRef = useRef(null);
+            const [lbKey, setLbKey] = useState(0);
+            const MAX = 20;
+
+            const spawn = () => {
+                if(!boxRef.current) return;
+                const b = boxRef.current.getBoundingClientRect();
+                setPos({ top: Math.random()*(b.height-60)+30, left: Math.random()*(b.width-60)+30 });
+                setLast(performance.now());
+            };
+
+            const start = () => { setClicks(0); setTimes([]); setPhase('playing'); setTimeout(spawn, 100); };
+            const hit = (e) => {
+                e.stopPropagation();
+                const nt = [...times, performance.now() - last];
+                setTimes(nt);
+                if(clicks+1 >= MAX) { setPhase('result'); saveResult(user, 'aim', Math.round(nt.reduce((a,b)=>a+b)/MAX)).then(()=>setLbKey(x=>x+1)); }
+                else { setClicks(clicks+1); spawn(); }
+            };
+
+            return (
+                <div className="animate-up game-wrapper">
+                    <button className="btn-back" onClick={goBack}>← Orqaga</button>
+                    <div className="game-area" ref={boxRef} style={{padding: phase==='playing'?0:'40px 20px', cursor: phase==='playing'?'crosshair':'default'}}>
+                        {phase === 'intro' && (<> <div style={{fontSize:'50px'}}>🎯</div><h2>Aim Trainer</h2><p>{MAX} ta nishonni tezda bosing</p><button className="btn-primary" onClick={start}>Boshlash</button> <Leaderboard gameType="aim" user={user} /> </>)}
+                        {phase === 'playing' && (<> <div style={{position:'absolute',top:'20px',opacity:0.5}}>{clicks}/{MAX}</div> <div className="aim-target" onMouseDown={hit} onTouchStart={hit} style={{top:`${pos.top}px`, left:`${pos.left}px`}}></div> </>)}
+                        {phase === 'result' && (<> <h2>O'rtacha vaqt:</h2> <h1 style={{fontSize:'48px', color:'var(--primary)'}}>{Math.round(times.reduce((a,b)=>a+b)/MAX)} ms</h1><button className="btn-primary" style={{margin:'20px 0'}} onClick={start}>Qayta</button> <Leaderboard key={lbKey} gameType="aim" user={user} /> </>)}
+                    </div>
+                </div>
+            );
+        }
+
+        // --- GAME 4: SEQUENCE MEMORY ---
+        function SequenceGame({ user, goBack }) {
+            const [phase, setPhase] = useState('intro');
+            const [seq, setSeq] = useState([]);
+            const [playSeq, setPlaySeq] = useState([]);
+            const [activeIdx, setActiveIdx] = useState(null);
+            const [lbKey, setLbKey] = useState(0);
+            
+            const playSequence = async (sequence) => {
+                setPhase('showing');
+                for (let i = 0; i < sequence.length; i++) {
+                    await new Promise(r => setTimeout(r, 400));
+                    setActiveIdx(sequence[i]);
+                    await new Promise(r => setTimeout(r, 400));
+                    setActiveIdx(null);
+                }
+                setPhase('playing');
+                setPlaySeq([]);
+            };
+
+            const startLevel = (currentSeq) => {
+                const next = [...currentSeq, Math.floor(Math.random() * 9)];
+                setSeq(next);
+                setTimeout(() => playSequence(next), 500);
+            };
+
+            const boxClick = (idx) => {
+                if (phase !== 'playing') return;
+                setActiveIdx(idx); setTimeout(()=>setActiveIdx(null), 150);
+                const nextPlaySeq = [...playSeq, idx];
+                setPlaySeq(nextPlaySeq);
+                
+                // Text check
+                if (nextPlaySeq[nextPlaySeq.length-1] !== seq[nextPlaySeq.length-1]) {
+                    setPhase('result');
+                    saveResult(user, 'sequence', seq.length - 1).then(() => setLbKey(x => x + 1));
+                    return;
+                }
+                
+                if (nextPlaySeq.length === seq.length) {
+                    setPhase('waiting');
+                    setTimeout(() => startLevel(seq), 500);
+                }
+            };
+
+            return (
+                <div className="animate-up game-wrapper">
+                    <button className="btn-back" onClick={goBack}>← Orqaga</button>
+                    <div className="game-area">
+                        {phase === 'intro' && (<> <div style={{fontSize:'50px'}}>🧩</div><h2>Sequence Memory</h2><p>Miltillagan kvadratlar tartibini qaytaring!</p><button className="btn-primary" onClick={() => {setSeq([]); startLevel([]);}}>Boshlash</button> <Leaderboard gameType="sequence" user={user} /> </>)}
+                        {(phase === 'showing' || phase === 'playing' || phase === 'waiting') && (
+                            <>
+                                <h2>Level {seq.length}</h2>
+                                <div className="seq-grid">
+                                    {[0,1,2,3,4,5,6,7,8].map(i => (
+                                        <div key={i} className={`seq-box ${activeIdx===i?'active':''}`} onClick={()=>boxClick(i)}></div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                        {phase === 'result' && (<> <h2>Xato ketdingiz</h2><h1 style={{color:'var(--primary)', margin:'15px 0'}}>Level {max(1,seq.length-1)}</h1><button className="btn-primary" onClick={() => {setSeq([]); startLevel([]);}} style={{marginBottom:'20px'}}>Qayta</button><Leaderboard key={lbKey} gameType="sequence" user={user} /> </>)}
+                    </div>
+                </div>
+            );
+        }
+        function max(a,b){return a>b?a:b;}
+
+        // --- GAME 5: WORD COLOR ---
+        const colors = [{name:'QIZIL', hex:'#ef4444'}, {name:'KOK', hex:'#3b82f6'}, {name:'YASHIL', hex:'#22c55e'}, {name:'SARIQ', hex:'#eab308'}];
+        
+        function WordColorGame({ user, goBack }) {
+            const [phase, setPhase] = useState('intro');
+            const [score, setScore] = useState(0);
+            const [word, setWord] = useState({});
+            const [lbKey, setLbKey] = useState(0);
+
+            const nextWord = () => {
+                const isMatch = Math.random() > 0.5;
+                const c1 = colors[Math.floor(Math.random() * colors.length)];
+                const c2 = isMatch ? c1 : colors.find(c => c.name !== c1.name); // Different color if no match
+                setWord({ text: c1.name, colorHex: c2.hex, isMatch: c1.hex === c2.hex });
+            };
+
+            const start = () => { setScore(0); setPhase('playing'); nextWord(); };
+
+            const answer = (isYes) => {
+                if ((isYes && word.isMatch) || (!isYes && !word.isMatch)) {
+                    setScore(s => s + 1); nextWord();
+                } else {
+                    setPhase('result');
+                    saveResult(user, 'word', score).then(() => setLbKey(x => x + 1));
+                }
+            };
+
+            return (
+                <div className="animate-up game-wrapper">
+                    <button className="btn-back" onClick={goBack}>← Orqaga</button>
+                    <div className="game-area">
+                        {phase === 'intro' && (<> <div style={{fontSize:'50px'}}>🎨</div><h2>Word Color Test</h2><p>So'z ma'nosi uning rangi bilan bir xilmi?</p><br/><span style={{color: '#3b82f6', fontWeight:'bold'}}>"QIZIL"</span> <small>yozuvi bir xil emas (Xato).</small><button className="btn-primary" onClick={start}>Boshlash</button> <Leaderboard gameType="word" user={user} /> </>)}
+                        {phase === 'playing' && (
+                            <>
+                                <h2>Score: {score}</h2>
+                                <div style={{fontSize:'64px', fontWeight:'800', margin:'40px 0', color: word.colorHex}}>{word.text}</div>
+                                <div style={{display:'flex', gap:'20px', width:'100%', maxWidth:'300px'}}>
+                                    <button className="btn-primary" style={{flex:1, background:'var(--surface-hover)', border:'2px solid var(--red)'}} onClick={()=>answer(false)}>❌ XATO</button>
+                                    <button className="btn-primary" style={{flex:1, background:'var(--surface-hover)', border:'2px solid var(--green)'}} onClick={()=>answer(true)}>✅ TO'G'RI</button>
+                                </div>
+                            </>
+                        )}
+                        {phase === 'result' && (<> <h2>O'yin tugadi!</h2><h1 style={{color:'var(--primary)', margin:'15px 0'}}>{score} Ball</h1><button className="btn-primary" onClick={start} style={{marginBottom:'20px'}}>Qayta</button><Leaderboard key={lbKey} gameType="word" user={user} /> </>)}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
