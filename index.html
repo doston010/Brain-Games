@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BrainApp Premium 5 in 1</title>
+    <title>BrainApp Firebase Version</title>
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- React & ReactDOM -->
@@ -12,122 +12,68 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700;800&family=Outfit:wght@300;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK (ES Modules via Browser) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAkyZ7_qUTTvZniSFDxGcgC_0-eMZ9ffTU",
+            authDomain: "braingames-a4b50.firebaseapp.com",
+            projectId: "braingames-a4b50",
+            storageBucket: "braingames-a4b50.firebasestorage.app",
+            messagingSenderId: "36382049855",
+            appId: "1:36382049855:web:6e25913eb29aa361691a8a",
+            measurementId: "G-WVPWN87QPT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Window obyektiga eksport qilish (React ichida ishlatish uchun)
+        window.fb = { db, doc, setDoc, getDoc, collection, query, where, orderBy, limit, getDocs };
+    </script>
+
     <style>
         :root {
-            --bg-color: #09090b;
-            --surface: #18181b;
-            --surface-hover: #27272a;
-            --primary: #8b5cf6;
-            --secondary: #3b82f6;
-            --text-main: #f8fafc;
-            --text-muted: #a1a1aa;
-            --red: #ef4444;
-            --green: #22c55e;
+            --bg-color: #09090b; --surface: #18181b; --surface-hover: #27272a;
+            --primary: #8b5cf6; --secondary: #3b82f6; --text-main: #f8fafc;
+            --text-muted: #a1a1aa; --red: #ef4444; --green: #22c55e;
             --border: rgba(255, 255, 255, 0.08);
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.08), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08), transparent 25%);
+            background-color: var(--bg-color); color: var(--text-main); min-height: 100vh;
+            display: flex; flex-direction: column; overflow-x: hidden; -webkit-tap-highlight-color: transparent;
+            background-image: radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.08), transparent 25%),
+                              radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08), transparent 25%);
         }
-
-        .container {
-            width: 100%; max-width: 600px; margin: 0 auto; padding: 20px 20px 40px;
-            display: flex; flex-direction: column; flex-grow: 1;
-        }
-
-        /* Nav */
-        nav {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 0 25px; border-bottom: 1px solid var(--border); margin-bottom: 25px;
-        }
-        nav h1 { 
-            font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 26px; 
-            background: linear-gradient(135deg, #60A5FA, #A78BFA, #F472B6); 
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
-        }
-        .user-badge {
-            display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 99px;
-            background: var(--border); font-size: 14px; font-weight: 500;
-        }
-
-        @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .container { width: 100%; max-width: 600px; margin: 0 auto; padding: 20px 20px 40px; display: flex; flex-direction: column; flex-grow: 1; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 25px; border-bottom: 1px solid var(--border); margin-bottom: 25px; }
+        nav h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 26px; background: linear-gradient(135deg, #60A5FA, #A78BFA, #F472B6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .user-badge { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 99px; background: var(--border); font-size: 14px; font-weight: 500; }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-up { animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-        /* Dashboard Cards */
         .cards-grid { display: flex; flex-direction: column; gap: 14px; }
-        .game-card {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-            padding: 18px; display: flex; align-items: center; gap: 20px;
-            cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden;
-        }
+        .game-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; display: flex; align-items: center; gap: 20px; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; }
         .game-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .card-icon {
-            font-size: 32px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.05); border-radius: 16px; flex-shrink: 0;
-        }
+        .card-icon { font-size: 32px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 16px; flex-shrink: 0; }
         .card-content h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
         .card-content p { font-size: 13px; color: var(--text-muted); line-height: 1.4;}
-
-        /* Generics */
-        .btn-back {
-            background: transparent; border: 1px solid var(--border); color: #fff; padding: 8px 16px; border-radius: 8px; 
-            cursor: pointer; font-size: 14px; margin-bottom: 20px; transition: background 0.2s; align-self: flex-start;
-        }
+        .btn-back { background: transparent; border: 1px solid var(--border); color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; margin-bottom: 20px; transition: background 0.2s; align-self: flex-start; }
         .btn-back:hover { background: rgba(255,255,255,0.1); }
         .game-wrapper { flex-grow: 1; display: flex; flex-direction: column; }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; border: none; 
-            padding: 14px 28px; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; border: none; padding: 14px 28px; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
         .btn-primary:active { transform: scale(0.96); }
-
-        .game-area {
-            flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            border-radius: 24px; padding: 40px 20px; text-align: center; cursor: default;
-            background: var(--surface); border: 1px solid var(--border); min-height: 350px; user-select: none; position: relative;
-        }
-
-        /* Number Memory */
+        .game-area { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 24px; padding: 40px 20px; text-align: center; cursor: default; background: var(--surface); border: 1px solid var(--border); min-height: 350px; user-select: none; position: relative; }
         .number-display { font-size: 50px; font-weight: 800; font-family: 'Space Grotesk', sans-serif; letter-spacing: 4px; word-break: break-all;}
-        .num-input {
-            background: rgba(0,0,0,0.3); border: 2px solid var(--border); color: #fff; font-size: 24px; font-weight: 700; 
-            text-align: center; padding: 15px; border-radius: 12px; width: 100%; max-width: 300px; outline: none; margin-top: 20px;
-        }
-
-        /* Sequence Memory */
-        .seq-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 300px; margin: 20px auto;
-        }
-        .seq-box {
-            background: rgba(255,255,255,0.05); border-radius: 16px; aspect-ratio: 1; border: 2px solid transparent; 
-            transition: background 0.2s, transform 0.1s; cursor: pointer;
-        }
+        .num-input { background: rgba(0,0,0,0.3); border: 2px solid var(--border); color: #fff; font-size: 24px; font-weight: 700; text-align: center; padding: 15px; border-radius: 12px; width: 100%; max-width: 300px; outline: none; margin-top: 20px; }
+        .seq-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 300px; margin: 20px auto; }
+        .seq-box { background: rgba(255,255,255,0.05); border-radius: 16px; aspect-ratio: 1; border: 2px solid transparent; transition: background 0.2s, transform 0.1s; cursor: pointer; }
         .seq-box.active { background: #fff; transform: scale(0.95); box-shadow: 0 0 20px rgba(255,255,255,0.8); }
         .seq-box:active { transform: scale(0.90); }
-
-        /* Aim Trainer */
-        .aim-target {
-            position: absolute; width: 50px; height: 50px; background: radial-gradient(circle, #fff 20%, var(--primary) 20%, var(--primary) 40%, transparent 40%);
-            border: 4px solid var(--primary); border-radius: 50%; cursor: crosshair; box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
-        }
-
-        /* Leaderboard */
+        .aim-target { position: absolute; width: 50px; height: 50px; background: radial-gradient(circle, #fff 20%, var(--primary) 20%, var(--primary) 40%, transparent 40%); border: 4px solid var(--primary); border-radius: 50%; cursor: crosshair; box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
         .leaderboard-box { background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-top: 25px; width: 100%;}
         .rank-item { display: flex; justify-content: space-between; padding: 10px 15px; border-radius: 10px; background: rgba(255,255,255,0.02); margin-bottom: 6px; }
         .rank-item.highlight { background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.3); }
@@ -139,36 +85,97 @@
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
-        const API_BASE = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') ? 'http://127.0.0.1:8000' : window.location.origin;
 
-        // --- Utils ---
+        // --- Firebase Data Fetching ---
         async function saveResult(user, gameType, score) {
-            await fetch(`${API_BASE}/api/score`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tg_id: user.id, name: user.first_name, game_type: gameType, score })
-            });
+            if (!window.fb) return console.warn("Firebase hali yuklanmadi");
+            const { db, doc, setDoc, getDoc } = window.fb;
+            const collName = `scores_${gameType}`;
+            const docRef = doc(db, collName, String(user.id));
+            
+            try {
+                const docSnap = await getDoc(docRef);
+                const isTimeBased = (gameType === 'reaction' || gameType === 'aim');
+                
+                if (docSnap.exists()) {
+                    const currentScore = docSnap.data().score;
+                    const isBetter = isTimeBased ? score < currentScore : score > currentScore;
+                    if (isBetter) {
+                        await setDoc(docRef, { score, name: user.first_name, tg_id: user.id }, { merge: true });
+                    }
+                } else {
+                    await setDoc(docRef, { score, name: user.first_name, tg_id: user.id });
+                }
+            } catch (e) {
+                console.error("SaveError: ", e);
+            }
         }
 
         function Leaderboard({ gameType, user }) {
-            const [data, setData] = useState({leaders:[], stat:{}});
+            const [data, setData] = useState({leaders:[], stat:{ rank: null, best_score: null }, loading: true});
+            
             useEffect(() => {
-                fetch(`${API_BASE}/api/leaderboard?tg_id=${user.id}`).then(r => r.json()).then(d => {
-                    setData({leaders: d.leaderboards[gameType] || [], stat: d.user_stats[gameType] || {}});
-                });
+                if (!window.fb) return;
+                const { db, collection, query, where, orderBy, limit, getDocs, doc, getDoc } = window.fb;
+                const collName = `scores_${gameType}`;
+                const isTimeBased = (gameType === 'reaction' || gameType === 'aim');
+                const orderDir = isTimeBased ? "asc" : "desc";
+
+                async function fetchBoard() {
+                    try {
+                        // Top 10
+                        const qTop = query(collection(db, collName), orderBy("score", orderDir), limit(10));
+                        const snapTop = await getDocs(qTop);
+                        const topLeaders = [];
+                        snapTop.forEach(d => topLeaders.push(d.data()));
+
+                        // User Stat + O'rni
+                        let rank = null, best = null;
+                        const uDoc = await getDoc(doc(db, collName, String(user.id)));
+                        if (uDoc.exists()) {
+                            best = uDoc.data().score;
+                            const op = isTimeBased ? "<" : ">";
+                            const qRank = query(collection(db, collName), where("score", op, best));
+                            const snapRank = await getDocs(qRank);
+                            rank = snapRank.size + 1;
+                        }
+                        
+                        setData({leaders: topLeaders, stat: {rank, best_score: best}, loading: false});
+                    } catch(e) {
+                        console.error("FBLoadError:", e);
+                        setData({leaders: [], stat: {rank: 'Xato'}, loading: false});
+                    }
+                }
+                fetchBoard();
             }, [gameType, user.id]);
 
             const unit = (gameType === 'reaction' || gameType === 'aim') ? 'ms' : (gameType === 'word' ? 'ball' : 'lvl');
             return (
                 <div className="leaderboard-box">
-                    <h3 style={{marginBottom:'15px', color:'var(--text-muted)'}}>🏆 Reyting The Best</h3>
-                    {data.stat.rank && <div style={{color:'#A78BFA', marginBottom:'15px', fontWeight:'bold'}}>O'rningiz: #{data.stat.rank} (Eng yaxshi: {data.stat.best_score} {unit})</div>}
-                    {data.leaders.length === 0 ? <p style={{color:'#666'}}>Hech kim o'ynamadi.</p> :
-                        data.leaders.map((l, i) => (
-                            <div key={i} className={`rank-item ${l.name === user.first_name ? 'highlight' : ''}`}>
-                                <div><span style={{opacity:0.5, marginRight:'10px'}}>#{i+1}</span>{l.name}</div>
-                                <div className="score">{l.score} {unit}</div>
+                    <h3 style={{marginBottom:'15px', color:'#fff'}}>🏆 Yetakchilar Reytingi</h3>
+                    {data.loading ? <p style={{color:'#666'}}>Yuklanmoqda...</p> : (
+                        <>
+                            <div style={{background: 'rgba(139, 92, 246, 0.15)', padding: '15px', borderRadius: '12px', border: '1px solid rgba(139, 92, 246, 0.4)', marginBottom: '20px'}}>
+                                <h4 style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '500'}}>SIZNING NATIJANGIZ</h4>
+                                {data.stat.rank ? (
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                        <span style={{fontSize: '24px', fontWeight: '800', color: '#A78BFA'}}>#{data.stat.rank} - o'rin</span>
+                                        <span style={{fontSize: '18px', fontWeight: '700', color: '#fff'}}>{data.stat.best_score} {unit}</span>
+                                    </div>
+                                ) : (
+                                    <span style={{color: '#EAB308'}}>Hali natija yo'q. Bugun boshlang!</span>
+                                )}
                             </div>
-                        ))}
+                            
+                            {data.leaders.length === 0 ? <p style={{color:'#666'}}>Hali hech kim o'ynamadi. Birinchi bo'ling!</p> :
+                                data.leaders.map((l, i) => (
+                                    <div key={i} className={`rank-item ${l.tg_id === user.id ? 'highlight' : ''}`}>
+                                        <div><span style={{opacity:0.5, marginRight:'10px'}}>#{i+1}</span>{l.name}</div>
+                                        <div className="score">{l.score} {unit}</div>
+                                    </div>
+                                ))}
+                        </>
+                    )}
                 </div>
             );
         }
@@ -190,9 +197,10 @@
                 <div className="container">
                     <nav>
                         <h1>BrainApp Mega</h1>
-                        <div className="user-badge">🚀 {user.first_name}</div>
+                        <div className="user-badge" style={{cursor: 'pointer'}} onClick={() => setView('leaderboard')}>🚀 {user.first_name}</div>
                     </nav>
                     {view === 'dashboard' && <Dashboard setView={setView} />}
+                    {view === 'leaderboard' && <GlobalLeaderboardView user={user} goBack={() => setView('dashboard')} />}
                     {view === 'reaction' && <ReactionGame user={user} goBack={() => setView('dashboard')} />}
                     {view === 'number' && <NumberMemoryGame user={user} goBack={() => setView('dashboard')} />}
                     {view === 'aim' && <AimTrainerGame user={user} goBack={() => setView('dashboard')} />}
@@ -213,7 +221,7 @@
             ];
             return (
                 <div className="animate-up cards-grid">
-                    <h2 style={{fontSize:'20px', marginBottom:'10px'}}>O'yinni tanlang (5ta)</h2>
+                    <h2 style={{fontSize:'20px', marginBottom:'10px'}}>O'yinni tanlang</h2>
                     {games.map(g => (
                         <div key={g.id} className="game-card" onClick={() => setView(g.id)}>
                             <div className="card-icon" style={{color: g.color}}>{g.icon}</div>
@@ -223,6 +231,38 @@
                             </div>
                         </div>
                     ))}
+                </div>
+            );
+        }
+
+        // --- Global Leaderboard View ---
+        function GlobalLeaderboardView({ user, goBack }) {
+            const [selectedGame, setSelectedGame] = useState('reaction');
+            const games = [
+                {id: 'reaction', title: '⚡ Tezlik'},
+                {id: 'number', title: '🔢 Xotira'},
+                {id: 'aim', title: '🎯 Nishon'},
+                {id: 'sequence', title: '🧩 Kombinatsiya'},
+                {id: 'word', title: '🎨 Chalg\'ituvchi'}
+            ];
+
+            return (
+                <div className="animate-up game-wrapper">
+                    <button className="btn-back" onClick={goBack}>← Orqaga</button>
+                    <div style={{display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '10px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch'}}>
+                        {games.map(g => (
+                            <button key={g.id} 
+                                onClick={() => setSelectedGame(g.id)}
+                                style={{
+                                    padding: '10px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
+                                    background: selectedGame === g.id ? 'var(--primary)' : 'var(--surface)',
+                                    color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: 'bold', fontSize: '14px', flexShrink: 0
+                                }}>
+                                {g.title}
+                            </button>
+                        ))}
+                    </div>
+                    <Leaderboard gameType={selectedGame} user={user} />
                 </div>
             );
         }
@@ -361,13 +401,11 @@
                 const nextPlaySeq = [...playSeq, idx];
                 setPlaySeq(nextPlaySeq);
                 
-                // Text check
                 if (nextPlaySeq[nextPlaySeq.length-1] !== seq[nextPlaySeq.length-1]) {
                     setPhase('result');
                     saveResult(user, 'sequence', seq.length - 1).then(() => setLbKey(x => x + 1));
                     return;
                 }
-                
                 if (nextPlaySeq.length === seq.length) {
                     setPhase('waiting');
                     setTimeout(() => startLevel(seq), 500);
@@ -380,21 +418,13 @@
                     <div className="game-area">
                         {phase === 'intro' && (<> <div style={{fontSize:'50px'}}>🧩</div><h2>Sequence Memory</h2><p>Miltillagan kvadratlar tartibini qaytaring!</p><button className="btn-primary" onClick={() => {setSeq([]); startLevel([]);}}>Boshlash</button> <Leaderboard gameType="sequence" user={user} /> </>)}
                         {(phase === 'showing' || phase === 'playing' || phase === 'waiting') && (
-                            <>
-                                <h2>Level {seq.length}</h2>
-                                <div className="seq-grid">
-                                    {[0,1,2,3,4,5,6,7,8].map(i => (
-                                        <div key={i} className={`seq-box ${activeIdx===i?'active':''}`} onClick={()=>boxClick(i)}></div>
-                                    ))}
-                                </div>
-                            </>
+                            <> <h2>Level {seq.length}</h2> <div className="seq-grid"> {[0,1,2,3,4,5,6,7,8].map(i => ( <div key={i} className={`seq-box ${activeIdx===i?'active':''}`} onClick={()=>boxClick(i)}></div> ))} </div> </>
                         )}
-                        {phase === 'result' && (<> <h2>Xato ketdingiz</h2><h1 style={{color:'var(--primary)', margin:'15px 0'}}>Level {max(1,seq.length-1)}</h1><button className="btn-primary" onClick={() => {setSeq([]); startLevel([]);}} style={{marginBottom:'20px'}}>Qayta</button><Leaderboard key={lbKey} gameType="sequence" user={user} /> </>)}
+                        {phase === 'result' && (<> <h2>Xato ketdingiz</h2><h1 style={{color:'var(--primary)', margin:'15px 0'}}>Level {Math.max(1,seq.length-1)}</h1><button className="btn-primary" onClick={() => {setSeq([]); startLevel([]);}} style={{marginBottom:'20px'}}>Qayta</button><Leaderboard key={lbKey} gameType="sequence" user={user} /> </>)}
                     </div>
                 </div>
             );
         }
-        function max(a,b){return a>b?a:b;}
 
         // --- GAME 5: WORD COLOR ---
         const colors = [{name:'QIZIL', hex:'#ef4444'}, {name:'KOK', hex:'#3b82f6'}, {name:'YASHIL', hex:'#22c55e'}, {name:'SARIQ', hex:'#eab308'}];
@@ -408,7 +438,7 @@
             const nextWord = () => {
                 const isMatch = Math.random() > 0.5;
                 const c1 = colors[Math.floor(Math.random() * colors.length)];
-                const c2 = isMatch ? c1 : colors.find(c => c.name !== c1.name); // Different color if no match
+                const c2 = isMatch ? c1 : colors.find(c => c.name !== c1.name);
                 setWord({ text: c1.name, colorHex: c2.hex, isMatch: c1.hex === c2.hex });
             };
 
